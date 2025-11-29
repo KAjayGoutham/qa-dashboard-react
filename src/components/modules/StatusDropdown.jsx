@@ -1,110 +1,93 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useModules } from '../../context/ModuleContext';
 import { getStatusClass } from '../../utils/helpers';
 import { STATUSES } from '../../utils/constants';
+import { StatusUpdateModal } from './StatusUpdateModal';
 
 export const StatusDropdown = ({ module, onToast }) => {
     const { updateModule } = useModules();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [pendingStatus, setPendingStatus] = useState(null);
 
-    const handleStatusChange = (newStatus) => {
-        if (module.status === newStatus) return;
+    const handleStatusClick = (status) => {
+        if (module.status === status) return;
+        setPendingStatus(status);
+        setIsModalOpen(true);
+    };
 
-        let reason = module.reason;
-        let failures = module.failures;
-        let updatedChannels = { ...module.channels };
+    const handleConfirmUpdate = ({ reason, failures, selectedChannels }) => {
+        const updatedChannels = { ...module.channels };
         let channelsUpdated = false;
 
-        // 1. Reason Prompt
-        if (['Failed', 'Blocked', 'In Progress'].includes(newStatus)) {
-            const input = prompt(`Enter reason for ${newStatus} (optional):`, reason);
-            if (input !== null) {
-                reason = input;
-            }
-        } else if (newStatus === 'Passed') {
-            reason = ''; // Clear reason when passed
-        }
-
-        // 2. Failure Count (Only for Failed)
-        if (newStatus === 'Failed') {
-            const failInput = prompt("Update failure count?", failures + 1);
-            if (failInput !== null) {
-                failures = parseInt(failInput) || failures;
-            }
-        }
-
-        // 3. Channel Prompt (For all statuses)
-        let promptMsg = "";
-        let targetState = newStatus; // Use the status string directly
-
-        switch (newStatus) {
-            case 'Passed':
-                promptMsg = "Enter passed channels (voice, sms, chat, email) or 'all':";
-                break;
-            case 'Failed':
-                promptMsg = "Enter failed channels (voice, sms, chat, email):";
-                break;
-            case 'Blocked':
-                promptMsg = "Enter blocked channels (voice, sms, chat, email):";
-                break;
-            case 'In Progress':
-                promptMsg = "Enter in-progress channels (voice, sms, chat, email):";
-                break;
-        }
-
-        const channelInput = prompt(promptMsg);
-        if (channelInput) {
-            if (newStatus === 'Passed' && channelInput.toLowerCase() === 'all') {
-                Object.keys(updatedChannels).forEach(key => {
-                    updatedChannels[key] = 'Passed';
-                });
+        // Update channels based on selection
+        Object.keys(selectedChannels).forEach(channel => {
+            if (selectedChannels[channel]) {
+                updatedChannels[channel] = pendingStatus;
                 channelsUpdated = true;
-            } else {
-                const selectedChannels = channelInput.toLowerCase().split(',').map(c => c.trim());
-                selectedChannels.forEach(channel => {
-                    if (updatedChannels.hasOwnProperty(channel)) {
-                        updatedChannels[channel] = targetState;
-                        channelsUpdated = true;
-                    }
-                });
             }
-        }
+        });
 
-        const updates = { status: newStatus, reason, failures };
+        const updates = {
+            status: pendingStatus,
+            reason: reason || module.reason, // Keep old reason if empty? Or overwrite? User asked for optional. Let's overwrite if they typed something, or if they cleared it?
+            // Actually, if they leave it empty, maybe they mean "no reason". 
+            // But usually optional means "keep existing" or "don't add one".
+            // Let's use the value from modal directly.
+            reason: reason,
+            failures: pendingStatus === 'Failed' ? failures : module.failures
+        };
+
         if (channelsUpdated) {
             updates.channels = updatedChannels;
         }
 
         updateModule(module.id, updates);
-        onToast(`Status updated to ${newStatus}${channelsUpdated ? ' and channels updated' : ''}`, 'success');
+        onToast(`Status updated to ${pendingStatus}`, 'success');
+        setIsModalOpen(false);
+        setPendingStatus(null);
     };
 
     return (
-        <div className="dropdown">
-            <button
-                className="btn btn-sm p-0 border-0"
-                type="button"
-                data-bs-toggle="dropdown"
-            >
-                <span className={`badge badge-status ${getStatusClass(module.status)}`}>
-                    {module.status} <i className="bi bi-chevron-down ms-1" style={{ fontSize: '0.8em' }}></i>
-                </span>
-            </button>
-            <ul className="dropdown-menu">
-                {STATUSES.map(status => (
-                    <li key={status}>
-                        <a
-                            className="dropdown-item"
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleStatusChange(status);
-                            }}
-                        >
-                            Set to {status}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <>
+            <div className="dropdown">
+                <button
+                    className="btn btn-sm p-0 border-0"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                >
+                    <span className={`badge badge-status ${getStatusClass(module.status)}`}>
+                        {module.status} <i className="bi bi-chevron-down ms-1" style={{ fontSize: '0.8em' }}></i>
+                    </span>
+                </button>
+                <ul className="dropdown-menu">
+                    {STATUSES.map(status => (
+                        <li key={status}>
+                            <a
+                                className="dropdown-item"
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleStatusClick(status);
+                                }}
+                            >
+                                Set to {status}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
+            {pendingStatus && (
+                <StatusUpdateModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onConfirm={handleConfirmUpdate}
+                    newStatus={pendingStatus}
+                    currentReason={module.reason}
+                    currentFailures={module.failures}
+                    currentChannels={module.channels}
+                />
+            )}
+        </>
     );
 };
