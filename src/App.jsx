@@ -115,10 +115,10 @@ function DashboardContent() {
         <EnvironmentTabs />
 
         <div className="row g-4">
-          <div className="col-lg-8">
+          <div className="col-lg-9">
             <SummaryCards modules={filteredModules} />
           </div>
-          <div className="col-lg-4">
+          <div className="col-lg-3">
             <div className="card border-0 p-3">
               <h6 className="fw-bold mb-3">Status Distribution</h6>
               <StatusChart modules={filteredModules} />

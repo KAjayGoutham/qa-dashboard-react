@@ -11,23 +11,71 @@ export const StatusDropdown = ({ module, onToast }) => {
 
         let reason = module.reason;
         let failures = module.failures;
+        let updatedChannels = { ...module.channels };
+        let channelsUpdated = false;
 
-        if (newStatus === 'Failed' || newStatus === 'Blocked') {
+        // 1. Reason Prompt
+        if (['Failed', 'Blocked', 'In Progress'].includes(newStatus)) {
             const input = prompt(`Enter reason for ${newStatus} (optional):`, reason);
             if (input !== null) {
                 reason = input;
             }
+        } else if (newStatus === 'Passed') {
+            reason = ''; // Clear reason when passed
+        }
 
-            if (newStatus === 'Failed') {
-                const failInput = prompt("Update failure count?", failures + 1);
-                if (failInput !== null) {
-                    failures = parseInt(failInput) || failures;
-                }
+        // 2. Failure Count (Only for Failed)
+        if (newStatus === 'Failed') {
+            const failInput = prompt("Update failure count?", failures + 1);
+            if (failInput !== null) {
+                failures = parseInt(failInput) || failures;
             }
         }
 
-        updateModule(module.id, { status: newStatus, reason, failures });
-        onToast(`Status updated to ${newStatus}`, 'success');
+        // 3. Channel Prompt (For all statuses)
+        let promptMsg = "";
+        let targetState = newStatus; // Use the status string directly
+
+        switch (newStatus) {
+            case 'Passed':
+                promptMsg = "Enter passed channels (voice, sms, chat, email) or 'all':";
+                break;
+            case 'Failed':
+                promptMsg = "Enter failed channels (voice, sms, chat, email):";
+                break;
+            case 'Blocked':
+                promptMsg = "Enter blocked channels (voice, sms, chat, email):";
+                break;
+            case 'In Progress':
+                promptMsg = "Enter in-progress channels (voice, sms, chat, email):";
+                break;
+        }
+
+        const channelInput = prompt(promptMsg);
+        if (channelInput) {
+            if (newStatus === 'Passed' && channelInput.toLowerCase() === 'all') {
+                Object.keys(updatedChannels).forEach(key => {
+                    updatedChannels[key] = 'Passed';
+                });
+                channelsUpdated = true;
+            } else {
+                const selectedChannels = channelInput.toLowerCase().split(',').map(c => c.trim());
+                selectedChannels.forEach(channel => {
+                    if (updatedChannels.hasOwnProperty(channel)) {
+                        updatedChannels[channel] = targetState;
+                        channelsUpdated = true;
+                    }
+                });
+            }
+        }
+
+        const updates = { status: newStatus, reason, failures };
+        if (channelsUpdated) {
+            updates.channels = updatedChannels;
+        }
+
+        updateModule(module.id, updates);
+        onToast(`Status updated to ${newStatus}${channelsUpdated ? ' and channels updated' : ''}`, 'success');
     };
 
     return (
