@@ -3,19 +3,34 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useTheme } from '../../hooks/useTheme';
 import { RELEASE_NAME_KEY } from '../../utils/constants';
 
-export const Header = ({ onAddModule, onExport, onImport, onSimulate }) => {
-    const [releaseName, setReleaseName] = useLocalStorage(RELEASE_NAME_KEY, 'Release 1.0');
+export const Header = ({ onExport, onImport, onSimulate, currentEnvironment }) => {
+    // Store release names as an object keyed by environment
+    const [releaseNames, setReleaseNames] = useLocalStorage(RELEASE_NAME_KEY, {
+        'QA': 'Release 1.0',
+        'SAT': 'Release 1.0',
+        'Prod': 'Release 1.0'
+    });
+
+    const currentReleaseName = releaseNames[currentEnvironment] || 'Release 1.0';
     const [isEditing, setIsEditing] = useState(false);
-    const [editValue, setEditValue] = useState(releaseName);
+    const [editValue, setEditValue] = useState(currentReleaseName);
     const { isDarkMode, toggleTheme } = useTheme();
 
+    // Update edit value when environment changes
+    React.useEffect(() => {
+        setEditValue(releaseNames[currentEnvironment] || 'Release 1.0');
+    }, [currentEnvironment, releaseNames]);
+
     const handleSaveRelease = () => {
-        setReleaseName(editValue);
+        setReleaseNames(prev => ({
+            ...prev,
+            [currentEnvironment]: editValue
+        }));
         setIsEditing(false);
     };
 
     return (
-        <div className="navbar navbar-dark bg-dark">
+        <div className="navbar navbar-dark bg-dark sticky-top">
             <div className="container-fluid">
                 <div className="d-flex align-items-center">
                     <i className="bi bi-speedometer2 fs-4 me-2"></i>
@@ -39,11 +54,11 @@ export const Header = ({ onAddModule, onExport, onImport, onSimulate }) => {
                         </div>
                     ) : (
                         <div className="d-flex align-items-center ms-3">
-                            <span className="text-white" id="releaseNameDisplay">{releaseName}</span>
+                            <span className="text-white" id="releaseNameDisplay">{currentReleaseName}</span>
                             <button
                                 className="btn btn-sm btn-link text-white-50"
                                 onClick={() => {
-                                    setEditValue(releaseName);
+                                    setEditValue(currentReleaseName);
                                     setIsEditing(true);
                                 }}
                             >
@@ -53,9 +68,6 @@ export const Header = ({ onAddModule, onExport, onImport, onSimulate }) => {
                     )}
                 </div>
                 <div className="d-flex gap-2">
-                    <button className="btn btn-outline-light btn-sm" onClick={onAddModule}>
-                        <i className="bi bi-plus-lg me-1"></i>Add Module
-                    </button>
                     <button className="btn btn-outline-light btn-sm" onClick={onExport}>
                         <i className="bi bi-download me-1"></i>Export
                     </button>

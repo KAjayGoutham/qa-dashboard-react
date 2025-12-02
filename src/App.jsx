@@ -10,6 +10,7 @@ import { ModuleTable } from './components/modules/ModuleTable';
 import { ModuleForm } from './components/modules/ModuleForm';
 import { Toast } from './components/common/Toast';
 import { Modal } from './components/common/Modal';
+import { SyncModal } from './components/modules/SyncModal';
 import {
   filterByEnvironment,
   filterByStatus,
@@ -19,7 +20,7 @@ import {
 } from './utils/helpers';
 
 function DashboardContent() {
-  const { modules, currentEnvironment, deleteModule, importModules } = useModules();
+  const { modules, currentEnvironment, deleteModule, importModules, syncModules } = useModules();
   const { toasts, showToast, removeToast } = useToast();
 
   // UI State
@@ -30,6 +31,8 @@ function DashboardContent() {
   const [editingModule, setEditingModule] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isSimulating, setIsSimulating] = useState(false);
+
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   // Filtered modules
   const filteredModules = useMemo(() => {
@@ -102,13 +105,45 @@ function DashboardContent() {
     }
   };
 
+  const handleSync = () => {
+    setIsSyncModalOpen(true);
+  };
+
+  const handleSyncConfirm = (targetEnvs, selectedModuleIds) => {
+    console.log('handleSyncConfirm called with:', { targetEnvs, selectedModuleIds });
+
+    if (!targetEnvs || targetEnvs.length === 0) {
+      showToast('Please select at least one environment', 'warning');
+      return;
+    }
+
+    if (!selectedModuleIds || selectedModuleIds.length === 0) {
+      showToast('Please select at least one module to sync', 'warning');
+      return;
+    }
+
+    let totalSynced = 0;
+    targetEnvs.forEach(env => {
+      console.log('Calling syncModules for env:', env);
+      const result = syncModules(env, selectedModuleIds);
+      if (result) totalSynced += result;
+    });
+
+    if (totalSynced > 0) {
+      showToast(`Successfully synced ${totalSynced} modules to ${targetEnvs.join(', ')}. Switch to those environments to view them.`, 'success');
+    } else {
+      showToast(`No new modules to sync. Selected modules already exist in ${targetEnvs.join(', ')}.`, 'info');
+    }
+    setIsSyncModalOpen(false);
+  };
+
   return (
     <div className="min-vh-100">
       <Header
-        onAddModule={handleAddModule}
         onExport={handleExport}
         onImport={handleImport}
         onSimulate={handleSimulate}
+        currentEnvironment={currentEnvironment}
       />
 
       <div className="container-fluid py-4">
@@ -119,9 +154,17 @@ function DashboardContent() {
             <SummaryCards modules={filteredModules} />
           </div>
           <div className="col-lg-3">
-            <div className="card border-0 p-3">
+            <div className="card border-0 p-3 mb-3">
               <h6 className="fw-bold mb-3">Status Distribution</h6>
               <StatusChart modules={filteredModules} />
+            </div>
+            <div className="d-flex gap-2">
+              <button className="btn btn-primary btn-sm flex-fill" onClick={handleAddModule}>
+                <i className="bi bi-plus-lg me-1"></i>Add Module
+              </button>
+              <button className="btn btn-info btn-sm flex-fill text-white" onClick={handleSync}>
+                <i className="bi bi-arrow-repeat me-1"></i>Sync
+              </button>
             </div>
           </div>
         </div>
@@ -170,6 +213,14 @@ function DashboardContent() {
         <p>Are you sure you want to delete <strong>{deleteConfirm?.name}</strong>?</p>
         <p className="text-muted small">This action cannot be undone.</p>
       </Modal>
+
+      <SyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        onConfirm={handleSyncConfirm}
+        currentEnvironment={currentEnvironment}
+        modules={filteredModules}
+      />
 
       <Toast toasts={toasts} onClose={removeToast} />
     </div>
