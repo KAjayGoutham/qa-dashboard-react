@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ModuleProvider, useModules } from './context/ModuleContext';
 import { useToast } from './hooks/useToast';
 import { Header } from './components/layout/Header';
@@ -20,6 +20,7 @@ import {
   sortModules,
   exportToJSON
 } from './utils/helpers';
+import confetti from 'canvas-confetti';
 
 function DashboardContent() {
   const { modules, currentEnvironment, deleteModule, importModules, syncModules } = useModules();
@@ -35,6 +36,16 @@ function DashboardContent() {
   const [isSimulating, setIsSimulating] = useState(false);
 
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+
+  // Trigger confetti when environment changes
+  useEffect(() => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { x: 0.55, y: 0.35 }, // Positioned closer to the title
+      colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
+    });
+  }, [currentEnvironment]);
 
   // Filtered modules
   const filteredModules = useMemo(() => {
