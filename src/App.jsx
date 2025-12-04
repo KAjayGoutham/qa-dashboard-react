@@ -188,6 +188,12 @@ function DashboardContent() {
         <div className="row g-4">
           <div className="col-lg-9">
             <SummaryCards modules={filteredModules} />
+
+            <div className="text-center my-4">
+              <h5 className="text-muted fw-normal">
+                You are currently working with <span className="fw-bold text-primary">{currentEnvironment} Dashboard</span>
+              </h5>
+            </div>
           </div>
           <div className="col-lg-3">
             <div className="card border-0 p-3 mb-3">

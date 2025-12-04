@@ -19,7 +19,7 @@ export const ModuleProvider = ({ children }) => {
         SAMPLE_DATA.map(m => ({ ...m, environment: 'QA' }))
     );
 
-    const [currentEnvironment, setCurrentEnvironment] = useState('QA');
+    const [currentEnvironment, setCurrentEnvironment] = useLocalStorage('qa_dashboard_current_env', 'QA');
     const [expandedModules, setExpandedModules] = useState(new Set());
 
     // Migrate modules on load
