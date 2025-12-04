@@ -11,6 +11,8 @@ import { ModuleForm } from './components/modules/ModuleForm';
 import { Toast } from './components/common/Toast';
 import { Modal } from './components/common/Modal';
 import { SyncModal } from './components/modules/SyncModal';
+import { generateReportHTML } from './utils/reportGenerator';
+import { RELEASE_NAME_KEY } from './utils/constants';
 import {
   filterByEnvironment,
   filterByStatus,
@@ -67,9 +69,42 @@ function DashboardContent() {
   };
 
   const handleExport = () => {
-    const filename = `qa_dashboard_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    exportToJSON(modules, filename);
+    exportToJSON(modules, `qa_dashboard_export_${new Date().toISOString().split('T')[0]}.json`);
     showToast('Data exported successfully', 'success');
+  };
+
+  const handleExportReport = () => {
+    try {
+      // Get release name from local storage
+      const storedReleaseNames = localStorage.getItem(RELEASE_NAME_KEY);
+      let releaseName = 'Release 1.0';
+
+      if (storedReleaseNames) {
+        const parsed = JSON.parse(storedReleaseNames);
+        // Handle both old string format and new object format
+        if (typeof parsed === 'string') {
+          releaseName = parsed;
+        } else if (typeof parsed === 'object') {
+          releaseName = parsed[currentEnvironment] || 'Release 1.0';
+        }
+      }
+
+      const htmlContent = generateReportHTML(modules, currentEnvironment, releaseName);
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `QA_Report_${currentEnvironment}_${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast('Report generated successfully', 'success');
+    } catch (error) {
+      console.error('Error generating report:', error);
+      showToast('Failed to generate report', 'error');
+    }
   };
 
   const handleImport = (event) => {
@@ -141,6 +176,7 @@ function DashboardContent() {
     <div className="min-vh-100">
       <Header
         onExport={handleExport}
+        onExportReport={handleExportReport}
         onImport={handleImport}
         onSimulate={handleSimulate}
         currentEnvironment={currentEnvironment}

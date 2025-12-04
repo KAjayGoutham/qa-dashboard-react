@@ -3,7 +3,7 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useTheme } from '../../hooks/useTheme';
 import { RELEASE_NAME_KEY } from '../../utils/constants';
 
-export const Header = ({ onExport, onImport, onSimulate, currentEnvironment }) => {
+export const Header = ({ onExport, onExportReport, onImport, onSimulate, currentEnvironment }) => {
     // Store release names as an object keyed by environment
     const [releaseNames, setReleaseNames] = useLocalStorage(RELEASE_NAME_KEY, {
         'QA': 'Release 1.0',
@@ -70,6 +70,9 @@ export const Header = ({ onExport, onImport, onSimulate, currentEnvironment }) =
                 <div className="d-flex gap-2">
                     <button className="btn btn-outline-light btn-sm" onClick={onExport}>
                         <i className="bi bi-download me-1"></i>Export
+                    </button>
+                    <button className="btn btn-outline-light btn-sm" onClick={onExportReport}>
+                        <i className="bi bi-file-earmark-text me-1"></i>Report
                     </button>
                     <label className="btn btn-outline-light btn-sm mb-0">
                         <i className="bi bi-upload me-1"></i>Import

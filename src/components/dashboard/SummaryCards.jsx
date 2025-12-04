@@ -16,7 +16,7 @@ export const SummaryCards = ({ modules }) => {
                             <i className="bi bi-layers"></i>
                         </div>
                         <div>
-                            <p className="text-muted mb-0 small text-uppercase fw-bold">Total Modules</p>
+                            <p className="text-muted mb-0 small text-uppercase fw-bold">Total Flows</p>
                             <h3 className="fw-bold mb-0">{total}</h3>
                         </div>
                     </div>
