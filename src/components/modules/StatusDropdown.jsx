@@ -10,7 +10,7 @@ export const StatusDropdown = ({ module, onToast }) => {
     const [pendingStatus, setPendingStatus] = useState(null);
 
     const handleStatusClick = (status) => {
-        if (module.status === status) return;
+        // Allow updating to the same status (user might want to change channels/reason)
         setPendingStatus(status);
         setIsModalOpen(true);
     };

@@ -57,6 +57,17 @@ export const StatusUpdateModal = ({
         }));
     };
 
+    const handleSelectAll = (selectAll) => {
+        const newChannels = {};
+        CHANNELS.forEach(channel => {
+            newChannels[channel] = selectAll;
+        });
+        setSelectedChannels(newChannels);
+    };
+
+    const allSelected = CHANNELS.every(channel => selectedChannels[channel]);
+    const noneSelected = CHANNELS.every(channel => !selectedChannels[channel]);
+
     const handleSubmit = () => {
         onConfirm({
             reason,
@@ -109,6 +120,20 @@ export const StatusUpdateModal = ({
                         newStatus === 'Failed' ? 'Select Failed Channels' :
                             `Select ${newStatus} Channels`}
                 </label>
+
+                <div className="form-check mb-2 border-bottom pb-2">
+                    <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="select-all-channels"
+                        checked={allSelected}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                    />
+                    <label className="form-check-label fw-bold" htmlFor="select-all-channels">
+                        Select All
+                    </label>
+                </div>
+
                 <div className="d-flex flex-wrap gap-3">
                     {CHANNELS.map(channel => (
                         <div className="form-check" key={channel}>
