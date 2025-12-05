@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ModuleProvider, useModules } from './context/ModuleContext';
 import { useToast } from './hooks/useToast';
 import { Header } from './components/layout/Header';
+import { ParticleBackground } from './components/layout/ParticleBackground';
 import { EnvironmentTabs } from './components/layout/EnvironmentTabs';
 import { SummaryCards } from './components/dashboard/SummaryCards';
 import { StatusChart } from './components/dashboard/StatusChart';
@@ -283,6 +284,7 @@ function DashboardContent() {
 function App() {
   return (
     <ModuleProvider>
+      <ParticleBackground />
       <DashboardContent />
     </ModuleProvider>
   );
