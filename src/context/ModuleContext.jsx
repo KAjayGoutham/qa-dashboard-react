@@ -142,6 +142,35 @@ export const ModuleProvider = ({ children }) => {
         return count;
     }, [currentEnvironment, setModules]);
 
+    // Reset all modules in current environment to specified status (also resets channels)
+    const resetAllModules = useCallback((targetStatus) => {
+        let count = 0;
+
+        setModules(prev => {
+            return prev.map(m => {
+                if (m.environment === currentEnvironment) {
+                    count++;
+                    return {
+                        ...m,
+                        status: targetStatus,
+                        reason: '',
+                        failures: 0,
+                        channels: { 
+                            voice: targetStatus, 
+                            sms: targetStatus, 
+                            chat: targetStatus, 
+                            email: targetStatus 
+                        },
+                        lastUpdated: new Date().toISOString()
+                    };
+                }
+                return m;
+            });
+        });
+
+        return count;
+    }, [currentEnvironment, setModules]);
+
     const value = {
         modules,
         currentEnvironment,
@@ -152,7 +181,8 @@ export const ModuleProvider = ({ children }) => {
         deleteModule,
         toggleExpansion,
         importModules,
-        syncModules
+        syncModules,
+        resetAllModules
     };
 
     return (

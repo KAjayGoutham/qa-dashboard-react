@@ -12,6 +12,7 @@ import { ModuleForm } from './components/modules/ModuleForm';
 import { Toast } from './components/common/Toast';
 import { Modal } from './components/common/Modal';
 import { SyncModal } from './components/modules/SyncModal';
+import { ResetModulesModal } from './components/modules/ResetModulesModal';
 import { generateReportHTML } from './utils/reportGenerator';
 import { RELEASE_NAME_KEY } from './utils/constants';
 import {
@@ -24,7 +25,7 @@ import {
 import confetti from 'canvas-confetti';
 
 function DashboardContent() {
-  const { modules, currentEnvironment, deleteModule, importModules, syncModules } = useModules();
+  const { modules, currentEnvironment, deleteModule, importModules, syncModules, resetAllModules } = useModules();
   const { toasts, showToast, removeToast } = useToast();
 
   // UI State
@@ -37,6 +38,7 @@ function DashboardContent() {
   const [isSimulating, setIsSimulating] = useState(false);
 
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   // Trigger confetti when environment changes
   useEffect(() => {
@@ -184,6 +186,20 @@ function DashboardContent() {
     setIsSyncModalOpen(false);
   };
 
+  const handleReset = () => {
+    setIsResetModalOpen(true);
+  };
+
+  const handleResetConfirm = (targetStatus) => {
+    const count = resetAllModules(targetStatus);
+    if (count > 0) {
+      showToast(`Successfully reset ${count} modules to "${targetStatus}" status in ${currentEnvironment} environment`, 'success');
+    } else {
+      showToast('No modules found to reset', 'info');
+    }
+    setIsResetModalOpen(false);
+  };
+
   return (
     <div className="min-vh-100">
       <Header
@@ -231,6 +247,7 @@ function DashboardContent() {
             onStatusChange={setStatusFilter}
             sortBy={sortBy}
             onSortChange={setSortBy}
+            onReset={handleReset}
           />
 
           <ModuleTable
@@ -274,6 +291,13 @@ function DashboardContent() {
         onConfirm={handleSyncConfirm}
         currentEnvironment={currentEnvironment}
         modules={filteredModules}
+      />
+
+      <ResetModulesModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={handleResetConfirm}
+        currentEnvironment={currentEnvironment}
       />
 
       <Toast toasts={toasts} onClose={removeToast} />

@@ -1,8 +1,13 @@
 import React from 'react';
 
-export const Controls = ({ searchText, onSearchChange, statusFilter, onStatusChange, sortBy, onSortChange }) => {
+export const Controls = ({ searchText, onSearchChange, statusFilter, onStatusChange, sortBy, onSortChange, onReset }) => {
     return (
         <div className="row g-3 mb-3">
+            <div className="col-md-2">
+                <button className="btn btn-danger w-100" onClick={onReset}>
+                    <i className="bi bi-arrow-clockwise me-2"></i>Reset Status
+                </button>
+            </div>
             <div className="col-md-4">
                 <div className="input-group">
                     <span className="input-group-text">
@@ -17,7 +22,7 @@ export const Controls = ({ searchText, onSearchChange, statusFilter, onStatusCha
                     />
                 </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
                 <select
                     className="form-select"
                     value={statusFilter}
@@ -30,7 +35,7 @@ export const Controls = ({ searchText, onSearchChange, statusFilter, onStatusCha
                     <option value="Blocked">Blocked</option>
                 </select>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
                 <select
                     className="form-select"
                     value={sortBy}
