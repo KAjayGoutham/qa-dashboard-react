@@ -15,7 +15,7 @@ export const StatusDropdown = ({ module, onToast }) => {
         setIsModalOpen(true);
     };
 
-    const handleConfirmUpdate = ({ reason, failures, selectedChannels }) => {
+    const handleConfirmUpdate = ({ reason, failures, selectedChannels, results }) => {
         const updatedChannels = { ...module.channels };
         let channelsUpdated = false;
 
@@ -29,12 +29,9 @@ export const StatusDropdown = ({ module, onToast }) => {
 
         const updates = {
             status: pendingStatus,
-            reason: reason || module.reason, // Keep old reason if empty? Or overwrite? User asked for optional. Let's overwrite if they typed something, or if they cleared it?
-            // Actually, if they leave it empty, maybe they mean "no reason". 
-            // But usually optional means "keep existing" or "don't add one".
-            // Let's use the value from modal directly.
             reason: reason,
-            failures: pendingStatus === 'Failed' ? failures : module.failures
+            failures: pendingStatus === 'Failed' ? failures : module.failures,
+            results: results || module.results
         };
 
         if (channelsUpdated) {
@@ -86,6 +83,7 @@ export const StatusDropdown = ({ module, onToast }) => {
                     currentReason={module.reason}
                     currentFailures={module.failures}
                     currentChannels={module.channels}
+                    currentResults={module.results}
                 />
             )}
         </>

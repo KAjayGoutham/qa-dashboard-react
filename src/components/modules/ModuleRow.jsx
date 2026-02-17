@@ -3,6 +3,8 @@ import { useModules } from '../../context/ModuleContext';
 import { ChannelPills } from './ChannelPills';
 import { StatusDropdown } from './StatusDropdown';
 import { CommentHistory } from '../comments/CommentHistory';
+import { ChannelResults } from './ChannelResults';
+import { TextWithLinks } from '../common/TextWithLinks';
 import { formatDate } from '../../utils/helpers';
 
 export const ModuleRow = ({ module, onEdit, onDelete, onToast }) => {
@@ -31,7 +33,10 @@ export const ModuleRow = ({ module, onEdit, onDelete, onToast }) => {
                     <StatusDropdown module={module} onToast={onToast} />
                 </td>
                 <td className="text-muted small text-truncate" style={{ maxWidth: '200px' }} title={module.reason || ''}>
-                    {module.reason || '-'}
+                    <TextWithLinks text={module.reason} />
+                </td>
+                <td className="text-muted small">
+                    <ChannelResults results={module.results} />
                 </td>
                 <td>{module.failures}</td>
                 <td className="text-muted small">{formatDate(module.lastUpdated)}</td>
@@ -54,7 +59,7 @@ export const ModuleRow = ({ module, onEdit, onDelete, onToast }) => {
             </tr>
             {isExpanded && (
                 <tr className="comment-history-row">
-                    <td colSpan="7" className="p-0">
+                    <td colSpan="8" className="p-0">
                         <div className="comment-history-container">
                             <CommentHistory module={module} onToast={onToast} />
                         </div>

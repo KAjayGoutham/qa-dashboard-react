@@ -8,6 +8,7 @@ export const SAMPLE_DATA = [
         failures: 0,
         lastUpdated: new Date().toISOString(),
         channels: { voice: true, sms: true, chat: true, email: true },
+        results: { voice: '', sms: '', chat: '', email: '' },
         commentHistory: []
     },
     {
@@ -18,6 +19,7 @@ export const SAMPLE_DATA = [
         failures: 5,
         lastUpdated: new Date(Date.now() - 86400000).toISOString(),
         channels: { voice: true, sms: false, chat: true, email: true },
+        results: { voice: '', sms: '', chat: '', email: '' },
         commentHistory: [
             {
                 type: 'failure',
@@ -34,6 +36,7 @@ export const SAMPLE_DATA = [
         failures: 0,
         lastUpdated: new Date(Date.now() - 3600000).toISOString(),
         channels: { voice: true, sms: true, chat: true, email: true },
+        results: { voice: '', sms: '', chat: '', email: '' },
         commentHistory: []
     },
     {
@@ -44,6 +47,7 @@ export const SAMPLE_DATA = [
         failures: 1,
         lastUpdated: new Date().toISOString(),
         channels: { voice: true, sms: true, chat: true, email: true },
+        results: { voice: '', sms: '', chat: '', email: '' },
         commentHistory: [
             {
                 type: 'fix',
@@ -60,6 +64,7 @@ export const SAMPLE_DATA = [
         failures: 0,
         lastUpdated: new Date(Date.now() - 172800000).toISOString(),
         channels: { voice: false, sms: false, chat: false, email: false },
+        results: { voice: '', sms: '', chat: '', email: '' },
         commentHistory: []
     },
     {
@@ -70,6 +75,7 @@ export const SAMPLE_DATA = [
         failures: 3,
         lastUpdated: new Date().toISOString(),
         channels: { voice: true, sms: true, chat: false, email: true },
+        results: { voice: '', sms: '', chat: '', email: '' },
         commentHistory: []
     }
 ];

@@ -9,11 +9,13 @@ export const StatusUpdateModal = ({
     newStatus,
     currentReason,
     currentFailures,
-    currentChannels
+    currentChannels,
+    currentResults
 }) => {
     const [reason, setReason] = useState('');
     const [failures, setFailures] = useState(0);
     const [selectedChannels, setSelectedChannels] = useState({});
+    const [channelResults, setChannelResults] = useState({});
 
     useEffect(() => {
         if (isOpen) {
@@ -21,25 +23,8 @@ export const StatusUpdateModal = ({
             setFailures(currentFailures || 0);
 
             // Initialize channels based on current state or default to all selected for 'Passed'
-            // For other statuses, we might want to start with none selected or keep current
-            // Let's default to current state, but if it's a string, convert to boolean based on status match
             const initialChannels = {};
             CHANNELS.forEach(channel => {
-                const val = currentChannels[channel];
-                // If we are setting to Passed, we might want to select all by default? 
-                // Or just let user select. Let's stick to current state logic or reset.
-                // User asked for checkboxes.
-
-                // Logic: 
-                // If channel value matches newStatus, it's checked.
-                // If we are switching to 'Failed', we want to select which ones FAILED.
-                // If we are switching to 'Passed', we want to select which ones PASSED.
-
-                // Let's just default to unchecked for simplicity, or maybe pre-fill if they already match?
-                // Actually, for better UX:
-                // If status is 'Passed', default all to checked (assuming all passed).
-                // If status is 'Failed', default all to unchecked (user picks what failed).
-
                 if (newStatus === 'Passed') {
                     initialChannels[channel] = true;
                 } else {
@@ -47,8 +32,15 @@ export const StatusUpdateModal = ({
                 }
             });
             setSelectedChannels(initialChannels);
+
+            // Initialize results
+            const initialResults = {};
+            CHANNELS.forEach(channel => {
+                initialResults[channel] = currentResults?.[channel] || '';
+            });
+            setChannelResults(initialResults);
         }
-    }, [isOpen, newStatus, currentReason, currentFailures, currentChannels]);
+    }, [isOpen, newStatus, currentReason, currentFailures, currentChannels, currentResults]);
 
     const handleChannelChange = (channel) => {
         setSelectedChannels(prev => ({
@@ -65,6 +57,13 @@ export const StatusUpdateModal = ({
         setSelectedChannels(newChannels);
     };
 
+    const handleResultChange = (channel, value) => {
+        setChannelResults(prev => ({
+            ...prev,
+            [channel]: value
+        }));
+    };
+
     const allSelected = CHANNELS.every(channel => selectedChannels[channel]);
     const noneSelected = CHANNELS.every(channel => !selectedChannels[channel]);
 
@@ -72,7 +71,8 @@ export const StatusUpdateModal = ({
         onConfirm({
             reason,
             failures,
-            selectedChannels
+            selectedChannels,
+            results: channelResults
         });
     };
 
@@ -155,6 +155,31 @@ export const StatusUpdateModal = ({
                     Selected channels will be marked as <strong>{newStatus}</strong>.
                     Unselected channels will remain unchanged.
                 </div>
+            </div>
+
+            <div className="mb-3">
+                <label className="form-label fw-bold">
+                    <i className="bi bi-link-45deg me-2"></i>
+                    Channel Results (Optional)
+                </label>
+                <div className="form-text small mb-2">
+                    Add result URLs or notes for each channel. URLs will be automatically converted to clickable links.
+                </div>
+                {CHANNELS.map(channel => (
+                    <div className="mb-2" key={`result-${channel}`}>
+                        <label className="form-label small text-capitalize">
+                            <i className={`bi ${CHANNEL_ICONS[channel]} me-1`}></i>
+                            {channel}
+                        </label>
+                        <input
+                            type="text"
+                            className="form-control form-control-sm"
+                            placeholder={`Enter result URL or note for ${channel}...`}
+                            value={channelResults[channel] || ''}
+                            onChange={(e) => handleResultChange(channel, e.target.value)}
+                        />
+                    </div>
+                ))}
             </div>
         </Modal>
     );

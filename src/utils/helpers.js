@@ -22,12 +22,28 @@ export const generateId = () => {
     return Date.now().toString() + Math.floor(Math.random() * 1000).toString();
 };
 
-// Calculate pass rate
+// Calculate pass rate based on individual channels (modules)
 export const calculatePassRate = (modules) => {
-    const total = modules.length;
-    if (total === 0) return 0;
-    const passed = modules.filter(m => m.status === 'Passed').length;
-    return Math.round((passed / total) * 100);
+    if (modules.length === 0) return 0;
+    
+    const channelsPerFlow = 4; // voice, sms, chat, email
+    const totalChannels = modules.length * channelsPerFlow;
+    
+    // Count failed channels across all flows
+    let failedChannels = 0;
+    modules.forEach(module => {
+        if (module.channels) {
+            Object.values(module.channels).forEach(channelStatus => {
+                // Count as failed if status is 'Failed', false, or 'Blocked'
+                if (channelStatus === 'Failed' || channelStatus === false || channelStatus === 'Blocked') {
+                    failedChannels++;
+                }
+            });
+        }
+    });
+    
+    const passedChannels = totalChannels - failedChannels;
+    return Math.round((passedChannels / totalChannels) * 100);
 };
 
 // Filter modules by environment
@@ -87,6 +103,7 @@ export const migrateModule = (module) => {
         ...module,
         environment: module.environment || 'QA',
         channels: module.channels || { voice: true, sms: true, chat: true, email: true },
+        results: module.results || { voice: '', sms: '', chat: '', email: '' },
         commentHistory: module.commentHistory || []
     };
 };

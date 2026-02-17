@@ -17,9 +17,10 @@ export const ModuleTable = ({ modules, onEdit, onDelete, onToast }) => {
                 <thead>
                     <tr>
                         <th className="ps-4">Flow Name</th>
-                        <th>Modules</th>
+                        <th>Channels</th>
                         <th>Status</th>
                         <th>Reason</th>
+                        <th>Results</th>
                         <th>Failures</th>
                         <th>Last Updated</th>
                         <th className="text-end pe-4">Actions</th>

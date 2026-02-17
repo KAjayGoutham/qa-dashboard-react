@@ -36,6 +36,7 @@ export const ModuleProvider = ({ children }) => {
             environment: currentEnvironment,
             lastUpdated: new Date().toISOString(),
             channels: { voice: true, sms: true, chat: true, email: true },
+            results: { voice: '', sms: '', chat: '', email: '' },
             commentHistory: []
         };
         setModules(prev => [...prev, newModule]);

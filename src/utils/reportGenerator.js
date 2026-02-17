@@ -3,9 +3,23 @@ import { CHANNELS, STATUS_CLASSES } from './constants';
 
 export const generateReportHTML = (modules, environment, releaseName) => {
     const envModules = modules.filter(m => m.environment === environment);
-    const totalModules = envModules.length;
-    const passedModules = envModules.filter(m => m.status === 'Passed').length;
-    const failedModules = envModules.filter(m => m.status === 'Failed').length;
+    const totalFlows = envModules.length;
+    const channelsPerFlow = 4; // voice, sms, chat, email
+    const totalModules = totalFlows * channelsPerFlow;
+    
+    // Count failed channels
+    let failedModules = 0;
+    envModules.forEach(module => {
+        if (module.channels) {
+            Object.values(module.channels).forEach(channelStatus => {
+                if (channelStatus === 'Failed' || channelStatus === false || channelStatus === 'Blocked') {
+                    failedModules++;
+                }
+            });
+        }
+    });
+    
+    const passedModules = totalModules - failedModules;
     const passRate = calculatePassRate(envModules);
     const date = new Date().toLocaleString();
 
@@ -30,6 +44,26 @@ export const generateReportHTML = (modules, environment, releaseName) => {
             return `<span class="badge ${colorClass} me-1">${label}</span>`;
         }).join('');
 
+        // Generate results column with clickable links - only for failed channels
+        const results = module.results ? CHANNELS.map(channel => {
+            const result = module.results[channel];
+            const channelStatus = module.channels?.[channel];
+            
+            // Only show results for failed channels
+            if (!result || result.trim() === '' || channelStatus === 'Passed' || channelStatus === true) return null;
+            
+            const label = channel.charAt(0).toUpperCase() + channel.slice(1);
+            const isUrl = result.match(/^https?:\/\//);
+            
+            if (isUrl) {
+                return `<div class="mb-1"><strong>${label}:</strong> <a href="${result}" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-underline">View Log</a></div>`;
+            } else {
+                return `<div class="mb-1"><strong>${label}:</strong> ${result}</div>`;
+            }
+        }).filter(Boolean).join('') : '';
+
+        const resultsCell = results || '-';
+
         return `
             <tr>
                 <td>${module.name}</td>
@@ -38,6 +72,7 @@ export const generateReportHTML = (modules, environment, releaseName) => {
                 <td>${module.failures}</td>
                 <td>${formatDate(module.lastUpdated)}</td>
                 <td>${module.reason || '-'}</td>
+                <td style="font-size: 0.875rem;">${resultsCell}</td>
             </tr>
         `;
     }).join('');
@@ -78,19 +113,20 @@ export const generateReportHTML = (modules, environment, releaseName) => {
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card stat-card">
-                    <div class="text-muted mb-2">TOTAL FLOWS</div>
+                    <div class="text-muted mb-2">TOTAL MODULES</div>
                     <div class="stat-value text-primary">${totalModules}</div>
+                    <small class="text-muted">${totalFlows} flows × 4 channels</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card stat-card">
-                    <div class="text-muted mb-2">PASSED</div>
+                    <div class="text-muted mb-2">PASSED MODULES</div>
                     <div class="stat-value text-success">${passedModules}</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card stat-card">
-                    <div class="text-muted mb-2">FAILED</div>
+                    <div class="text-muted mb-2">FAILED MODULES</div>
                     <div class="stat-value text-danger">${failedModules}</div>
                 </div>
             </div>
@@ -115,6 +151,7 @@ export const generateReportHTML = (modules, environment, releaseName) => {
                                 <th>Failures</th>
                                 <th>Last Updated</th>
                                 <th>Reason/Comments</th>
+                                <th>Results</th>
                             </tr>
                         </thead>
                         <tbody>
