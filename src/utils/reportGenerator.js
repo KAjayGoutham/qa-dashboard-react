@@ -113,20 +113,20 @@ export const generateReportHTML = (modules, environment, releaseName) => {
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card stat-card">
-                    <div class="text-muted mb-2">TOTAL MODULES</div>
+                    <div class="text-muted mb-2">TOTAL CHANNELS</div>
                     <div class="stat-value text-primary">${totalModules}</div>
                     <small class="text-muted">${totalFlows} flows × 4 channels</small>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card stat-card">
-                    <div class="text-muted mb-2">PASSED MODULES</div>
+                    <div class="text-muted mb-2">PASSED CHANNELS</div>
                     <div class="stat-value text-success">${passedModules}</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card stat-card">
-                    <div class="text-muted mb-2">FAILED MODULES</div>
+                    <div class="text-muted mb-2">FAILED CHANNELS</div>
                     <div class="stat-value text-danger">${failedModules}</div>
                 </div>
             </div>
