@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useServerStorage } from '../hooks/useServerStorage';
 import { STORAGE_KEY } from '../utils/constants';
 import { SAMPLE_DATA } from '../utils/sampleData';
 import { migrateModule, generateId } from '../utils/helpers';
@@ -15,18 +15,22 @@ export const useModules = () => {
 };
 
 export const ModuleProvider = ({ children }) => {
-    const [modules, setModules] = useLocalStorage(STORAGE_KEY,
+    const [modules, setModules, { isLoading, error }] = useServerStorage(STORAGE_KEY,
         SAMPLE_DATA.map(m => ({ ...m, environment: 'QA' }))
     );
 
-    const [currentEnvironment, setCurrentEnvironment] = useLocalStorage('qa_dashboard_current_env', 'QA');
+    const [currentEnvironment, setCurrentEnvironment] = useServerStorage('qa_dashboard_current_env', 'QA');
     const [expandedModules, setExpandedModules] = useState(new Set());
+    const [hasMigrated, setHasMigrated] = useState(false);
 
-    // Migrate modules on load
+    // Migrate modules on load - only once when data is loaded
     useEffect(() => {
-        const migratedModules = modules.map(migrateModule);
-        setModules(migratedModules);
-    }, []); // Only run once on mount
+        if (!isLoading && !hasMigrated && modules.length > 0) {
+            const migratedModules = modules.map(migrateModule);
+            setModules(migratedModules);
+            setHasMigrated(true);
+        }
+    }, [isLoading, hasMigrated, modules.length]); // Run when loading completes
 
     // Add module
     const addModule = useCallback((moduleData) => {
@@ -183,7 +187,9 @@ export const ModuleProvider = ({ children }) => {
         toggleExpansion,
         importModules,
         syncModules,
-        resetAllModules
+        resetAllModules,
+        isLoading,
+        error
     };
 
     return (

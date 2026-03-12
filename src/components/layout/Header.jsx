@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { useServerStorage } from '../../hooks/useServerStorage';
 import { useTheme } from '../../hooks/useTheme';
 import { RELEASE_NAME_KEY } from '../../utils/constants';
 
 export const Header = ({ onExport, onExportReport, onImport, onSimulate, currentEnvironment }) => {
     // Store release names as an object keyed by environment
-    const [releaseNames, setReleaseNames] = useLocalStorage(RELEASE_NAME_KEY, {
+    const [releaseNames, setReleaseNames] = useServerStorage(RELEASE_NAME_KEY, {
         'QA': 'Release 1.0',
         'SAT': 'Release 1.0',
         'Prod': 'Release 1.0'
