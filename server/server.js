@@ -31,6 +31,7 @@ async function initializeDataFile() {
     } catch {
         const initialData = {
             modules: [],
+            issues: [],
             environments: {
                 QA: 'QA',
                 SAT: 'SAT',
