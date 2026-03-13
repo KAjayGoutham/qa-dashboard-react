@@ -18,6 +18,8 @@ export const useServerStorage = (key, initialValue) => {
                 // Use ?? instead of || to properly handle empty arrays
                 if (key === 'qa_dashboard_modules') {
                     setStoredValue(data.modules !== undefined ? data.modules : initialValue);
+                } else if (key === 'qa_dashboard_issues') {
+                    setStoredValue(data.issues !== undefined ? data.issues : initialValue);
                 } else if (key === 'qa_dashboard_current_env') {
                     setStoredValue(data.currentEnvironment ?? initialValue);
                 } else if (key === 'qa_dashboard_release_names') {
@@ -58,6 +60,8 @@ export const useServerStorage = (key, initialValue) => {
             
             if (key === 'qa_dashboard_modules') {
                 data.modules = valueToStore;
+            } else if (key === 'qa_dashboard_issues') {
+                data.issues = valueToStore;
             } else if (key === 'qa_dashboard_current_env') {
                 data.currentEnvironment = valueToStore;
             } else if (key === 'qa_dashboard_release_names') {

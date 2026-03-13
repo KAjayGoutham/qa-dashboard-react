@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ModuleProvider, useModules } from './context/ModuleContext';
+import { IssuesProvider } from './context/IssuesContext';
 import { useToast } from './hooks/useToast';
 import { Header } from './components/layout/Header';
 import { ParticleBackground } from './components/layout/ParticleBackground';
@@ -9,6 +10,7 @@ import { StatusChart } from './components/dashboard/StatusChart';
 import { Controls } from './components/dashboard/Controls';
 import { ModuleTable } from './components/modules/ModuleTable';
 import { ModuleForm } from './components/modules/ModuleForm';
+import { IssuesDashboard } from './components/issues/IssuesDashboard';
 import { Toast } from './components/common/Toast';
 import { Modal } from './components/common/Modal';
 import { SyncModal } from './components/modules/SyncModal';
@@ -29,6 +31,7 @@ function DashboardContent() {
   const { toasts, showToast, removeToast } = useToast();
 
   // UI State
+  const [currentView, setCurrentView] = useState('modules'); // 'modules' or 'issues'
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('name_asc');
@@ -211,52 +214,78 @@ function DashboardContent() {
       />
 
       <div className="container-fluid py-4">
-        <EnvironmentTabs />
-
-        <div className="row g-4">
-          <div className="col-lg-9">
-            <SummaryCards modules={filteredModules} />
-
-            <div className="text-center my-4">
-              <h5 className="text-muted fw-normal">
-                You are currently working with <span className="fw-bold text-primary">{currentEnvironment} Dashboard</span>
-              </h5>
-            </div>
-          </div>
-          <div className="col-lg-3">
-            <div className="card border-0 p-3 mb-3">
-              <h6 className="fw-bold mb-3">Status Distribution</h6>
-              <StatusChart modules={filteredModules} />
-            </div>
-            <div className="d-flex gap-2">
-              <button className="btn btn-primary btn-sm flex-fill" onClick={handleAddModule}>
-                <i className="bi bi-plus-lg me-1"></i>Add Module
-              </button>
-              <button className="btn btn-info btn-sm flex-fill text-white" onClick={handleSync}>
-                <i className="bi bi-arrow-repeat me-1"></i>Sync
-              </button>
-            </div>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <EnvironmentTabs />
+          <div className="btn-group" role="group">
+            <button
+              type="button"
+              className={`btn btn-sm ${currentView === 'modules' ? 'btn-primary' : 'btn-outline-primary'}`}
+              onClick={() => setCurrentView('modules')}
+            >
+              <i className="bi bi-grid-3x3-gap me-2"></i>
+              Modules
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${currentView === 'issues' ? 'btn-primary' : 'btn-outline-primary'}`}
+              onClick={() => setCurrentView('issues')}
+            >
+              <i className="bi bi-bug me-2"></i>
+              Issues
+            </button>
           </div>
         </div>
 
-        <div className="card border-0 mt-4 p-4">
-          <Controls
-            searchText={searchText}
-            onSearchChange={setSearchText}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            onReset={handleReset}
-          />
+        {currentView === 'modules' ? (
+          <>
+            <div className="row g-4">
+              <div className="col-lg-9">
+                <SummaryCards modules={filteredModules} />
 
-          <ModuleTable
-            modules={filteredModules}
-            onEdit={handleEditModule}
-            onDelete={handleDeleteModule}
-            onToast={showToast}
-          />
-        </div>
+                <div className="text-center my-4">
+                  <h5 className="text-muted fw-normal">
+                    You are currently working with <span className="fw-bold text-primary">{currentEnvironment} Dashboard</span>
+                  </h5>
+                </div>
+              </div>
+              <div className="col-lg-3">
+                <div className="card border-0 p-3 mb-3">
+                  <h6 className="fw-bold mb-3">Status Distribution</h6>
+                  <StatusChart modules={filteredModules} />
+                </div>
+                <div className="d-flex gap-2">
+                  <button className="btn btn-primary btn-sm flex-fill" onClick={handleAddModule}>
+                    <i className="bi bi-plus-lg me-1"></i>Add Module
+                  </button>
+                  <button className="btn btn-info btn-sm flex-fill text-white" onClick={handleSync}>
+                    <i className="bi bi-arrow-repeat me-1"></i>Sync
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="card border-0 mt-4 p-4">
+              <Controls
+                searchText={searchText}
+                onSearchChange={setSearchText}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                onReset={handleReset}
+              />
+
+              <ModuleTable
+                modules={filteredModules}
+                onEdit={handleEditModule}
+                onDelete={handleDeleteModule}
+                onToast={showToast}
+              />
+            </div>
+          </>
+        ) : (
+          <IssuesDashboard />
+        )}
       </div>
 
       <ModuleForm
@@ -308,8 +337,10 @@ function DashboardContent() {
 function App() {
   return (
     <ModuleProvider>
-      <ParticleBackground />
-      <DashboardContent />
+      <IssuesProvider>
+        <ParticleBackground />
+        <DashboardContent />
+      </IssuesProvider>
     </ModuleProvider>
   );
 }
